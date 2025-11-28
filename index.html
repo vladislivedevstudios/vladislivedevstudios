@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VladisLive Dev Studios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #8a2be2;
+            --secondary: #ff00ff;
+            --accent: #00ffff;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --text: #e6e6ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, #1a0a2a 100%);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .vhs-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px),
+                repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+            z-index: 999;
+            mix-blend-mode: overlay;
+            opacity: 0.4;
+            animation: vhs-flicker 8s infinite linear;
+        }
+
+        @keyframes vhs-flicker {
+            0%, 100% { opacity: 0.4; }
+            5% { opacity: 0.3; }
+            10% { opacity: 0.5; }
+            15% { opacity: 0.4; }
+            20% { opacity: 0.6; }
+            50% { opacity: 0.4; }
+            75% { opacity: 0.3; }
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to bottom, transparent 0%, var(--accent) 50%, transparent 100%);
+            opacity: 0.15;
+            animation: scan 3s linear infinite;
+            z-index: 998;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 997;
+            opacity: 0.3;
+            animation: noise 0.2s infinite;
+        }
+
+        @keyframes noise {
+            0%, 100% { transform: translate(0,0); }
+            10% { transform: translate(-1%,-1%); }
+            20% { transform: translate(-1%,1%); }
+            30% { transform: translate(1%,1%); }
+            40% { transform: translate(1%,-1%); }
+            50% { transform: translate(-1%,-1%); }
+            60% { transform: translate(-1%,1%); }
+            70% { transform: translate(1%,1%); }
+            80% { transform: translate(1%,-1%); }
+            90% { transform: translate(-1%,-1%); }
+        }
+        
+        .glitch-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+            perspective: 1000px;
+        }
+        
+        .glitch {
+            position: relative;
+            font-size: 5rem;
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 
+                0.05em 0 0 var(--secondary), 
+                -0.05em -0.025em 0 var(--accent),
+                0 0 20px rgba(138, 43, 226, 0.5);
+            animation: glitch 8s infinite;
+            color: var(--primary);
+            letter-spacing: 4px;
+            transform-style: preserve-3d;
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+        
+        .glitch::before {
+            animation: glitch-top 3s infinite;
+            color: var(--secondary);
+            transform: translate(-0.04em, -0.025em);
+        }
+        
+        .glitch::after {
+            animation: glitch-bottom 2.5s infinite;
+            color: var(--accent);
+            transform: translate(0.04em, 0.025em);
+        }
+        
+        @keyframes glitch {
+            0%, 5%, 7%, 19%, 21%, 55%, 57%, 100% {
+                transform: translate3d(0,0,0) scale3d(1,1,1);
+            }
+            6% {
+                transform: translate3d(-5px, 3px, 0) scale3d(1.1,0.9,1);
+            }
+            20% {
+                transform: translate3d(3px, -2px, 0) scale3d(0.9,1.1,1);
+            }
+            56% {
+                transform: translate3d(2px, -1px, 0) scale3d(1.05,0.95,1);
+            }
+        }
+
+        @keyframes glitch-top {
+            0%, 100% { transform: translate(0); }
+            33% { transform: translate(-2px, -1px); }
+            66% { transform: translate(2px, 1px); }
+        }
+
+        @keyframes glitch-bottom {
+            0%, 100% { transform: translate(0); }
+            33% { transform: translate(2px, 1px); }
+            66% { transform: translate(-2px, -1px); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            padding: 6rem 0 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 300px;
+            background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.3) 0%, transparent 70%);
+            filter: blur(40px);
+            z-index: -1;
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .banner-container {
+            display: flex;
+            justify-content: center;
+            margin: 3rem 0;
+            position: relative;
+        }
+        
+        .banner {
+            max-width: 900px;
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 
+                0 0 60px var(--primary),
+                0 0 100px rgba(138, 43, 226, 0.3);
+            animation: banner-pulse 8s infinite alternate;
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 2;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, var(--dark), var(--darker)) padding-box,
+                        linear-gradient(45deg, var(--primary), var(--accent), var(--secondary)) border-box;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary), var(--primary));
+            border-radius: 17px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            animation: border-rotate 3s linear infinite;
+        }
+
+        .banner:hover::before {
+            opacity: 1;
+        }
+
+        .banner:hover {
+            transform: scale(1.03) translateY(-5px);
+            box-shadow: 
+                0 0 80px var(--secondary),
+                0 0 120px rgba(255, 0, 255, 0.4),
+                0 0 200px rgba(0, 255, 255, 0.2);
+        }
+        
+        @keyframes banner-pulse {
+            0% { 
+                box-shadow: 
+                    0 0 60px var(--primary),
+                    0 0 100px rgba(138, 43, 226, 0.3);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 80px var(--secondary),
+                    0 0 120px rgba(255, 0, 255, 0.4);
+            }
+            100% { 
+                box-shadow: 
+                    0 0 70px var(--accent),
+                    0 0 110px rgba(0, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes border-rotate {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        .tagline {
+            font-size: 1.8rem;
+            margin: 2rem 0;
+            color: var(--accent);
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            animation: text-shimmer 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes text-shimmer {
+            0% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6); }
+        }
+        
+        .description {
+            background: linear-gradient(135deg, rgba(10, 10, 26, 0.8) 0%, rgba(5, 5, 16, 0.9) 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            margin: 4rem 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            animation: description-glow 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes description-glow {
+            0% { border-left-color: var(--primary); border-right-color: var(--primary); }
+            50% { border-left-color: var(--secondary); border-right-color: var(--secondary); }
+            100% { border-left-color: var(--accent); border-right-color: var(--accent); }
+        }
+        
+        .description::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent), var(--primary));
+            animation: border-flow 3s linear infinite;
+            background-size: 200% 100%;
+        }
+
+        @keyframes border-flow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+        
+        .description h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            position: relative;
+            display: inline-block;
+        }
+
+        .description h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--accent), transparent);
+            animation: title-underline 3s ease-in-out infinite;
+        }
+
+        @keyframes title-underline {
+            0%, 100% { transform: scaleX(0.5); opacity: 0.7; }
+            50% { transform: scaleX(1); opacity: 1; }
+        }
+        
+        .description p {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            text-shadow: 0 0 10px rgba(230, 230, 255, 0.3);
+        }
+
+        .games-section {
+            margin: 5rem 0;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            position: relative;
+            animation: title-glitch 10s infinite;
+        }
+
+        @keyframes title-glitch {
+            0%, 100% { transform: translateX(0); }
+            5% { transform: translateX(-3px); }
+            10% { transform: translateX(3px); }
+            15% { transform: translateX(0); }
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, rgba(10, 10, 26, 0.8) 0%, rgba(5, 5, 16, 0.9) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary), var(--primary));
+            border-radius: 17px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            animation: border-rotate 4s linear infinite;
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
+        .game-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(138, 43, 226, 0.3);
+        }
+
+        .game-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .game-card:hover .game-image {
+            transform: scale(1.05);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        .game-description {
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .links-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            margin: 5rem 0;
+        }
+        
+        .link-card {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(255, 0, 255, 0.05) 100%);
+            border-radius: 15px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .link-card:hover::before {
+            left: 100%;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-12px);
+            border-color: var(--accent);
+            box-shadow: 
+                0 15px 30px rgba(0, 255, 255, 0.2),
+                0 0 30px rgba(0, 255, 255, 0.1);
+        }
+        
+        .link-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .link-card:hover .link-icon {
+            transform: scale(1.2) rotate(5deg);
+            color: var(--secondary);
+        }
+        
+        .link-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+            color: var(--secondary);
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+        
+        .link-description {
+            margin-bottom: 2rem;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(138, 43, 226, 0.6),
+                0 0 30px rgba(255, 0, 255, 0.3);
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+        }
+
+        .game-btn {
+            background: linear-gradient(45deg, var(--dark), var(--primary));
+            font-size: 0.9rem;
+            padding: 0.8rem 1.5rem;
+        }
+
+        .game-btn:hover {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+        }
+        
+        footer {
+            text-align: center;
+            padding: 4rem 0;
+            margin-top: 5rem;
+            border-top: 1px solid rgba(138, 43, 226, 0.3);
+            color: var(--accent);
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent), transparent);
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 20s infinite linear;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .particle:nth-child(2n) {
+            background-color: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+        }
+
+        .particle:nth-child(3n) {
+            background-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .glitch {
+                font-size: 2.8rem;
+            }
+            
+            .description {
+                padding: 2rem;
+            }
+            
+            .links-section,
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            .banner {
+                max-width: 100%;
+            }
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(20px);
+            opacity: 0.3;
+            animation: float-element 15s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .floating-element:nth-child(odd) {
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            animation-delay: -5s;
+        }
+
+        .floating-element:nth-child(even) {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            animation-delay: -10s;
+        }
+
+        @keyframes float-element {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(100px, -50px) scale(1.2);
+            }
+            50% {
+                transform: translate(-50px, 100px) scale(0.8);
+            }
+            75% {
+                transform: translate(-100px, -100px) scale(1.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="vhs-overlay"></div>
+    <div class="scanline"></div>
+    <div class="noise"></div>
+    
+    <div class="particles" id="particles"></div>
+
+    <div class="floating-element" style="top: 10%; left: 5%;"></div>
+    <div class="floating-element" style="top: 60%; left: 90%;"></div>
+    <div class="floating-element" style="top: 80%; left: 10%;"></div>
+    <div class="floating-element" style="top: 20%; left: 80%;"></div>
+    
+    <div class="container">
+        <header>
+            <div class="header-glow"></div>
+            <div class="glitch-container">
+                <h1 class="glitch" data-text="VladisLive Dev Studios">VladisLive Dev Studios</h1>
+            </div>
+            
+            <div class="banner-container">
+                <img src="https://pic.maxiol.com/thumbs2/1764358902.2960587284.vdevbanner.png" alt="VladisLive Dev Studios Banner" class="banner">
+            </div>
+            
+            <p class="tagline">Creating unforgettable horror experiences</p>
+        </header>
+        
+        <section class="description">
+            <h2>About VladisLive Dev Studios</h2>
+            <p>VladisLive Dev Studios is a development studio that creates various horror games, some of which achieve success on itch.io. The captivating VHS effect, intriguing storyline, and engaging mechanics all significantly contribute to the popularity of the games and the growth of the audience! Our games feature immersive atmospheres, psychological horror elements, and unique visual styles that keep players coming back for more.</p>
+        </section>
+
+        <section class="games-section">
+            <h2 class="section-title">Our Games</h2>
+            <div class="games-grid">
+                <div class="game-card">
+                    <img src="https://img.itch.zone/aW1nLzE2MDg0MjU1LnBuZw==/347x500/6Ld%2B%2Fp.png" alt="Wasteland Alone" class="game-image">
+                    <h3 class="game-title">Wasteland Alone</h3>
+                    <p class="game-description">You rent a house in a desolate wasteland,
+hoping for peace and solitude, but as the weeks pass, ordinary things begin to feel strange</p>
+                    <a href="https://vladislive-dev.itch.io/wasteland-alone" class="btn game-btn" target="_blank">Play Now</a>
+                </div>
+                
+                <div class="game-card">
+                    <img src="https://img.itch.zone/aW1nLzE1NzQxMTQxLnBuZw==/347x500/%2B%2F7v8w.png" alt="Exit Only" class="game-image">
+                    <h3 class="game-title">Exit Only</h3>
+                    <p class="game-description">You play a new employee at a small software company. Life seems normal — quiet office, simple tasks. One evening you go to a nearby store and bump into a colleague. But something about them feels wrong.</p>
+                    <a href="https://vladislive-dev.itch.io/exit-only" class="btn game-btn" target="_blank">Play Now</a>
+                </div>
+                
+                <div class="game-card">
+                    <img src="https://img.itch.zone/aW1nLzE1NjU1OTY0LnBuZw==/347x500/4t%2B%2BvR.png" alt="The Last Drop" class="game-image">
+                    <h3 class="game-title">The Last Drop</h3>
+                    <p class="game-description"is a game where the player works at a gas station. the title has two meanings "the last drop" of both gasoline and people. the gas
+station is not very good</p>
+                    <a href="https://vladislive-dev.itch.io/the-last-drop" class="btn game-btn" target="_blank">Play Now</a>
+                </div>
+                
+                <div class="game-card">
+                    <img src="https://img.itch.zone/aW1nLzE1NDU5MjQzLnBuZw==/347x500/9Xb%2F%2Bw.png" alt="Eternal Night" class="game-image">
+                    <h3 class="game-title">Eternal Night</h3>
+                    <p class="game-description">You arrived as a cleaner in the house
+
+At first everything was as usual, you were doing your business, but at one moment, something went wrong...</p>
+                    <a href="https://vladislive-dev.itch.io/eternal-night" class="btn game-btn" target="_blank">Play Now</a>
+                </div>
+            </div>
+        </section>
+        
+        <section class="links-section">
+            <div class="link-card">
+                <div class="link-icon">
+                    <i class="fab fa-discord"></i>
+                </div>
+                <h3 class="link-title">Discord Community</h3>
+                <p class="link-description">Join our Discord server to connect with other fans, get development updates, and participate in the community.</p>
+                <a href="https://discord.gg/quQzQAa2nP" class="btn" target="_blank">Join Discord</a>
+            </div>
+            
+            <div class="link-card">
+                <div class="link-icon">
+                    <i class="fab fa-itch-io"></i>
+                </div>
+                <h3 class="link-title">itch.io Games</h3>
+                <p class="link-description">Explore our collection of horror games available on itch.io, where some have gained notable success.</p>
+                <a href="https://vladislive-dev.itch.io/" class="btn" target="_blank">Visit itch.io</a>
+            </div>
+            
+            <div class="link-card">
+                <div class="link-icon">
+                    <i class="fab fa-youtube"></i>
+                </div>
+                <h3 class="link-title">YouTube Channel</h3>
+                <p class="link-description">Check out our YouTube channel for game trailers, development logs, and other exciting content.</p>
+                <a href="https://www.youtube.com/@vladisLive_dev" class="btn" target="_blank">Watch on YouTube</a>
+            </div>
+        </section>
+        
+        <footer>
+            <p>&copy; 2023 VladisLive Dev Studios. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 80;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 4 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                const left = Math.random() * 100;
+                particle.style.left = `${left}vw`;
+                
+                const animationDuration = Math.random() * 25 + 15;
+                particle.style.animationDuration = `${animationDuration}s`;
+                
+                const animationDelay = Math.random() * 10;
+                particle.style.animationDelay = `${animationDelay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            const glitch = document.querySelector('.glitch');
+            setInterval(() => {
+                glitch.style.animation = 'none';
+                setTimeout(() => {
+                    glitch.style.animation = 'glitch 8s infinite';
+                }, 10);
+            }, 12000);
+
+            const cards = document.querySelectorAll('.game-card, .link-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const angleY = (x - centerX) / 20;
+                    const angleX = (centerY - y) / 20;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
